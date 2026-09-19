@@ -288,9 +288,10 @@ if __name__ == "__main__":
     test.load(base_alloc, cur_cls, 3); results["current"] = report(test, "CURRENT allocation (3 runs)"); _cache.clear()
 
     t0 = time.time()
-    chosen = choose(list(pool.map(_task_k3, range(args.starts3))), 3, keep=1)
+    chosen = choose(list(pool.map(_task_k3, range(args.starts3))), 3, keep=3, top=max(8, args.starts3))
     best[3] = (chosen[0][2], chosen[0][3]); alts[3] = chosen
-    test.load(*best[3], 3); results["3_1"] = report(test, "BEST with 3 runs"); _cache.clear()
+    for rank, (Jv, anchor, al, cl) in enumerate(chosen, 1):
+        test.load(al, cl, 3); results[f"3_{rank}"] = report(test, f"BEST{'' if rank == 1 else ' #' + str(rank)} with 3 runs"); _cache.clear()
     print(f"  ({time.time()-t0:.0f}s)", flush=True)
     anchors = sorted((i for i in range(1, n) if not is_city[i] and fixed[i] is None), key=lambda i: -pop_eff[i])[:args.anchors]
     for k in range(4, args.max_runs + 1):

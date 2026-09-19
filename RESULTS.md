@@ -81,6 +81,24 @@ Three strengths were tried, in minutes of van time per day per kilometre of bord
 
 Images: `compact_mu0.4_3runs_1.png`, `compact_mu0.1_4runs_1.png`, `compact_mu0.4_4runs_1.png`. Data: `data/more_runs_allocations_mu0.1.csv`, `_mu0.4.csv` and `_mu1.5.csv`, with matching summaries. Code: `scripts/build_adjacency.py`, and `scripts/optimize_more_runs.py --mu`.
 
+## Three runs again, with the compactness preference
+
+The number of runs is fixed at three again, and the moderate compactness preference (0.4 minutes per km of border) is kept. Twelve independent searches, ranked on one set of simulated days and reported on another untouched set; savings are paired against the current allocation on the same days. Overtime is weighted 10 times here, as in the sections above.
+
+| | Van time saved | Time over 12 h saved | Hamilton / Portland / Warrnambool over 12 h | Border between runs | Localities moved |
+|---|---|---|---|---|---|
+| Current allocation | | | 63% / 4% / 19% of days | 406 km | |
+| Compact 1 | 13 min/day (+-4), 0.6%, about 53 h/year | 17 min/day | 42% / 24% / 11% | 349 km | 21 (3,100 people) |
+| Compact 2 | 10 min/day (+-3), about 40 h/year | 14 min/day | 28% / 45% / 12% | 349 km | 30 (5,300 people) |
+| Compact 3 | 4 min/day (+-3), about 15 h/year | 15 min/day | 30% / 42% / 15% | 368 km | 28 (4,700 people) |
+
+- **All three keep every run one connected area** (1 patch each, and Warrnambool 2 as today) with less border than today's 406 km.
+- **The same moves, mostly.** Hamilton's south-west border towns go to Portland (Macarthur, Hawkesdale, Dartmoor, Strathdownie), Kirkstall, Crossley and Killarney go from Warrnambool to Portland, and Ellerslie goes from Hamilton to Warrnambool. Compact 2 and 3 also move Casterton (1,673 people) to Portland, which is what lowers Hamilton's over-12-hour days and raises Portland's.
+- **Compact 1 is the gentlest change** (21 localities, 3,100 people) and the best on van time. Compact 2 trades a longer Portland day for a much shorter Hamilton one.
+- **Why the saving is smaller than in the first table.** These searches weight overtime 10 times rather than 2, so they give up some van time to remove overtime, and they are compact. The compactness preference itself did not cost anything measurable: without it the three-run search found 34.4 h/day, with it 34.2 h/day.
+
+Images: `compact3_3runs_1.png`, `compact3_3runs_2.png`, `compact3_3runs_3.png`. Data: `data/more_runs_allocations_3runs_mu0.4.csv` and its summary. Code: `scripts/allocation_savings_more.py`.
+
 ## How it works
 
 - **Demand.** A locality generates consignments at c x population per day, with c = 0.73 per 1,000 people, chosen so the Warrnambool run averages the 36 consignments of the sample day. Horsham is treated as rarely appearing.
@@ -110,7 +128,8 @@ Images: `compact_mu0.4_3runs_1.png`, `compact_mu0.1_4runs_1.png`, `compact_mu0.4
 | `data/logs/` | Full output of each optimization run |
 | `allocation_4runs_1.png`, `allocation_4runs_2.png`, `allocation_4runs_3.png`, `allocation_3runs_1.png` | Allocations when the number of runs is free |
 | `compact_mu0.4_3runs_1.png`, `compact_mu0.1_4runs_1.png`, `compact_mu0.4_4runs_1.png` | Allocations with the compactness preference |
-| `scripts/` | The code: `build_adjacency.py`,  `density_map.py`, `classify_localities.py`, `route_times.py`, `optimize_runs.py`, `optimize_more_runs.py`, `allocation_images.py`, `allocation_images_more.py`, `reallocation_map.py`, `allocation_savings.py` |
+| `compact3_3runs_1.png`, `compact3_3runs_2.png`, `compact3_3runs_3.png` | Best three allocations with exactly three runs and the compactness preference |
+| `scripts/` | The code: `allocation_savings_more.py`,  `build_adjacency.py`,  `density_map.py`, `classify_localities.py`, `route_times.py`, `optimize_runs.py`, `optimize_more_runs.py`, `allocation_images.py`, `allocation_images_more.py`, `reallocation_map.py`, `allocation_savings.py` |
 
 ## What would improve this most
 
