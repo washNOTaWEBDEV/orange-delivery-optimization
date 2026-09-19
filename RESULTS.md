@@ -35,6 +35,27 @@ At demand as calibrated (current allocation: 34.6 h/day of van time, 77 minutes/
 
 If demand is 30% lower than calibrated, the saving falls to 5-7 min/day and there is little overtime to remove (12 min/day). If demand is 30% higher, the saving is 8-10 min/day and overtime falls by about 40 of 177 min/day. The full table is in `data/allocation_savings.csv`.
 
+## Letting the number of runs vary
+
+The number of runs was freed (3 to 5). Runs 1-3 keep their cities; an extra run has no city and is a further driver leaving Geelong on the days it has stops. Because a fourth run costs a whole extra round trip, the 12-hour limit is weighted heavily here (a minute over 12 hours counts as 10 minutes of van time). Numbers are on untouched simulated days at the calibrated demand, and are only comparable within this table.
+
+| | Van time | Time over 12 h | Days with any run over 12 h | Hamilton / Portland / Warrnambool over 12 h | Fourth run |
+|---|---|---|---|---|---|
+| Current allocation | 34.4 h/day | 52 min/day | 71% | 63% / 4% / 19% | none |
+| Best with 3 runs | 34.4 h/day | 34 min/day | 62% | 33% / 32% / 16% | none |
+| 4 runs, option 1 | 36.5 h/day | 18 min/day | 39% | 23% / 15% / 5% | 27 towns, 12,000 people |
+| 4 runs, option 2 | 36.4 h/day | 18 min/day | 41% | 23% / 17% / 5% | 31 towns, 11,400 people |
+| 4 runs, option 3 | 36.7 h/day | 18 min/day | 40% | 22% / 16% / 6% | 33 towns, 8,200 people |
+| 5 runs | 36.3-36.4 h/day | 17-18 min/day | 37-38% | about the same as 4 runs | fifth run stays empty |
+
+- **A fifth run is never worth opening.** In all three options the search left it empty.
+- **A fourth run is a poor trade.** It removes about 16 minutes of overtime a day compared with the best three-run allocation, but adds 2.0-2.3 van-hours a day. That is about 8 minutes of extra driving for every minute of overtime removed, so it only pays if a minute over 12 hours is worth more than about 8 minutes of ordinary van time.
+- **The fourth run works one day in three.** In each option it makes a full trip of about 10-11 hours on its one day and none on the other two, so it behaves like a part-time driver. It takes the south-west coast corridor (Port Fairy, Dennington, Allansford, Koroit, Kirkstall and neighbours) plus scattered small towns elsewhere.
+- **Its territory is patchy.** The model does not penalise a run whose towns are not one connected area, so the fourth run in the images is fragmented. That may be impractical for warehouse sorting; a compactness rule could be added.
+- **Overtime never disappears.** Even with four runs some run is over 12 hours on about 40% of days, because daily volumes vary. Removing that would need spare capacity on heavy days, such as a second driver only when a run is full. That is the splitting you asked me to ignore for now, and it would likely cost far less than a permanent fourth run.
+
+Images: `allocation_4runs_1.png`, `allocation_4runs_2.png`, `allocation_4runs_3.png`, and `allocation_3runs_1.png` for the best three-run allocation at the same overtime weight. Data: `data/more_runs_allocations.csv`, `data/more_runs_summary.json`. Code: `scripts/optimize_more_runs.py`, `scripts/allocation_images_more.py`.
+
 ## How it works
 
 - **Demand.** A locality generates consignments at c x population per day, with c = 0.73 per 1,000 people, chosen so the Warrnambool run averages the 36 consignments of the sample day. Horsham is treated as rarely appearing.
@@ -62,7 +83,8 @@ If demand is 30% lower than calibrated, the saving falls to 5-7 min/day and ther
 | `data/borderline_localities_from_image.csv` | Localities within about 3 km of an outline |
 | `data/localities_by_run_from_image.csv` | Localities inside each outline, with population |
 | `data/logs/` | Full output of each optimization run |
-| `scripts/` | The code: `density_map.py`, `classify_localities.py`, `route_times.py`, `optimize_runs.py`, `allocation_images.py`, `reallocation_map.py` |
+| `allocation_4runs_1.png`, `allocation_4runs_2.png`, `allocation_4runs_3.png`, `allocation_3runs_1.png` | Allocations when the number of runs is free |
+| `scripts/` | The code: `density_map.py`, `classify_localities.py`, `route_times.py`, `optimize_runs.py`, `optimize_more_runs.py`, `allocation_images.py`, `allocation_images_more.py`, `reallocation_map.py`, `allocation_savings.py` |
 
 ## What would improve this most
 
