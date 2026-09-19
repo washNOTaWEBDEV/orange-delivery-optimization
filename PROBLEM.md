@@ -28,7 +28,7 @@ These are hard requirements for now. The number of runs (three) and the rule tha
 
 Splitting a run between two drivers is ignored for now, so each run is done by one driver per day and the 12-hour limit applies to the run as a whole. The smaller runs shown on the map (section 5) are also ignored for now. For now, every town other than the three cities is assumed to have a 2-day wait (constraint 3 is not applied), since there is little data on which towns are high-volume.
 
-All drivers may be assumed to begin and end at the depot each day. A van is never loaded twice in a day, so each driver's day is a single trip out from the depot and back. The 12-hour limit and the total delivery time cover the driving and delivering from leaving the depot to returning, including the long drive to and from the region. They do not include end-of-day loading at the depot or breaks. A van never fills up, by count, weight or size, before the 12 hours are used, so van capacity is ignored.
+All drivers may be assumed to begin and end at the depot each day. A van is never loaded twice in a day, so each driver's day is a single trip out from the depot and back. The 12-hour limit and the total delivery time cover the time from leaving the depot to returning, including the long drive to and from the region and any breaks. They do not include end-of-day loading at the depot. A van never fills up, by count, weight or size, before the 12 hours are used, so van capacity is ignored.
 
 ## 3. Terms
 
@@ -63,30 +63,31 @@ The chat adds this context. None of it overrides the final summary.
 
 **Example town: Hawkesdale.** Which run should it belong to? It is the only town that has been in all three runs.
 
-## 5. Current runs (from the map screenshot)
+## 5. Current runs (from the run map)
 
-The current territories are drawn in Google My Maps as semi-transparent polygons. Many more towns exist than are labelled. Extents are rough readings of the picture, and the drawn polygons overlap along some borders.
+The current territories are drawn in Google My Maps and exported as a KML file, Main.kml, which holds ten named polygons. The file is not committed to the repository. Its polygons give the exact boundaries; the extents below are rough, and the areas are computed from it.
 
-| Run | Polygon | Roughly covers |
-|---|---|---|
-| Hamilton | purple, very large | Hamilton and the north-west: from the South Australian border east to about Lismore, north to about the Grampians and Horsham, south to roughly Byaduk, Penshurst, Mortlake and Hawkesdale. Labelled towns inside include Coleraine, Casterton, Balmoral, Dunkeld, Glenthompson, Caramut, Hexham, Woorndoo and Lake Bolac. |
-| Portland | green, south-west | From the SA border (Nelson) through Portland, Cape Bridgewater, Heywood, Narrawong and Tyrendarra to Port Fairy; north-east to Condah, Macarthur and Hawkesdale. |
-| Warrnambool | blue, south-west coast | Koroit and Tower Hill through Warrnambool, Woolsthorpe, Grassmere, Nullawarre, Timboon and Simpson to Port Campbell and Princetown, with a lobe reaching up to Hawkesdale. Currently split between two drivers (the split line was drawn on the original map); splitting is ignored for now. |
+| Run | Colour | Area | Roughly covers |
+|---|---|---|---|
+| Hamilton | purple | about 16,900 km² | Hamilton and the north-west: from the South Australian border east past Lismore to the edge of the Golden Plains polygon, north to about Horsham and the Grampians, south to roughly Byaduk, Penshurst, Mortlake and Hawkesdale. Labelled towns inside include Coleraine, Casterton, Balmoral, Dunkeld, Glenthompson, Caramut, Hexham, Woorndoo and Lake Bolac. |
+| Portland | green | about 4,450 km² | From the SA border (Nelson) through Portland, Cape Bridgewater, Heywood, Narrawong and Tyrendarra to Port Fairy; north-east to Condah, Macarthur and Hawkesdale. |
+| Warrnambool | blue | about 2,960 km² | Koroit and Tower Hill through Warrnambool, Woolsthorpe, Grassmere, Nullawarre, Timboon and Simpson to Port Campbell and Princetown, with a lobe reaching up to Hawkesdale. The run is currently split between two drivers on high-volume days; splitting is ignored for now. |
 
-- Overlaps: Hamilton and Portland along a band from about Condah and Macarthur to Hawkesdale; Portland and Warrnambool around Port Fairy and Hawkesdale; Hamilton and Warrnambool slightly along Warrnambool's northern edge. **Hawkesdale** sits where all three polygons overlap.
-- The other polygons on the map are, per the final summary, unrelated runs, and are ignored for now: a pale yellow one between the eastern tip of the Hamilton polygon and Geelong (presumably Golden Plains, which the chat places north-east or east of the Hamilton run), and small ones at Geelong, Lara/Corio, Torquay/Anglesea and Colac.
-- A small black polygon around Noorat, Terang, Camperdown and Cobden, on the north-eastern edge of the Warrnambool polygon, is unexplained. It may be the Warrnambool split or a separate small run; it is ignored for now along with the other smaller runs.
+- **Overlaps.** The three polygons overlap: Hamilton and Portland by about 1,170 km², Portland and Warrnambool by about 135 km², Hamilton and Warrnambool by about 70 km². The map alone therefore does not say which run a town in those zones belongs to. **Hawkesdale** (approximate coordinates) lies inside all three polygons.
+- **Other polygons.** The KML names seven more runs. The final summary calls them unrelated, and they are ignored for now: Golden Plains (about 1,350 km², east of the Hamilton polygon, overlapping it by about 50 km²), "Cobden, Camperdown, Terang" (about 310 km², on the north-eastern edge of the Warrnambool polygon), Colac, Otways, Central Geelong, Northern Geelong and Southern Geelong.
+- **The split.** The KML has no split line for the Warrnambool run. Whether the "Cobden, Camperdown, Terang" polygon is the second half of that split or a separate run is not stated.
 
 ## 6. Data
 
 **Available**
 - Every driver's run sheets, including the town of each consignment. Access is described as unlimited for "the places for which drivers really load". Exporting them is manual and slow (weak internet connection in the warehouse).
-- One sample run sheet export: one driver's run (the Warrnambool run) on one particular day, 36 consignments. Only the receiver's location is relevant to this problem, so the working copy keeps only the receiver's location fields and drops everything else, including customer, sender and receiver names. The file is kept locally and out of version control. The export had no date, run name, driver or timing fields.
+- One sample run sheet export: one driver's run (from its towns, the Warrnambool run) on one particular day, 36 consignments. Only the receiver's location is relevant to this problem, so the working copy keeps only the receiver's location fields and drops everything else, including customer, sender and receiver names. The file is kept locally and out of version control. The export had no date, run name, driver or timing fields.
+- The current run boundaries as a KML file, Main.kml (see section 5).
 - Google Maps, personal experience, and other drivers' experience for geography and timings.
 - Population data, for example the Victoria population map based on the 2021 Census (https://mangomap.com/franchise-demo/maps/88276/Victoria-Population-Map). The problem owner says population is highly correlated with delivery volume, so it can be treated as a good heuristic for volume for now. The map shows how strongly the three cities dominate the volume. The problem owner can supply population data if it is needed.
 
 **Thin or missing**
-- Durations of runs: "very little data on the length of time of runs". The problem owner will provide some real durations. So far there is one: the sample run above took 11 hours 43 minutes in total, including breaks, which the 12-hour limit excludes.
+- Durations of runs: "very little data on the length of time of runs". The problem owner will provide some real durations. So far there is one: the sample run above took 11 hours 43 minutes in total, including breaks, which count toward the 12-hour limit. That is 17 minutes under the limit.
 
 **Sensitivity**
 - The problem owner first believed per-town consignment counts over time were not accessible, and that the boss would not like them being accessed. Access was later found to exist. Whether the company is comfortable with the data being used outside the workplace is not settled, so treat raw run sheets as confidential and keep them out of version control.
@@ -94,6 +95,6 @@ The current territories are drawn in Google My Maps as semi-transparent polygons
 ## 7. Open points
 
 - **Waits.** How irregular arrivals should be modelled (for example, average rates from history) is not stated.
-- **Scope.** The full list of towns in the three runs is not given (it can be derived from the run sheets).
+- **Scope.** The full list of towns in the three runs is not given. Because the map polygons overlap, it cannot be read from the map alone (it can be partly derived from run sheets).
+- **Cobden, Camperdown, Terang.** Whether this polygon is a separate run or the second half of the Warrnambool split is not stated. The answer decides whether its towns are in scope.
 - **Run sheet coverage.** The sample export has no date, run name, driver or timing fields, so each sheet's run and date, and how long that day took, have to be supplied separately.
-- **Sample run timing.** The length of the breaks inside the sample run's 11 hours 43 minutes is not stated, so its length under the 12-hour measure (which excludes breaks) is not known.
