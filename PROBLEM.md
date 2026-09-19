@@ -81,7 +81,7 @@ The current territories are drawn in Google My Maps as semi-transparent polygons
 
 **Available**
 - Every driver's run sheets, including the town of each consignment. Access is described as unlimited for "the places for which drivers really load". Exporting them is manual and slow (weak internet connection in the warehouse).
-- One sample run sheet export: one driver's run (the Warrnambool run) on one particular day, 36 consignments. Only the receiver's location is relevant to this problem, so the working copy keeps just the receiver's suburb for each consignment. All other fields, including names and street addresses, were removed, and the file is kept locally and out of version control. The export had no date, run name, driver or timing fields.
+- One sample run sheet export: one driver's run (the Warrnambool run) on one particular day, 36 consignments. Only the receiver's location is relevant to this problem, so the working copy keeps only the receiver's location fields and drops everything else, including customer, sender and receiver names. The file is kept locally and out of version control. The export had no date, run name, driver or timing fields.
 - Google Maps, personal experience, and other drivers' experience for geography and timings.
 - Population data, for example the Victoria population map based on the 2021 Census (https://mangomap.com/franchise-demo/maps/88276/Victoria-Population-Map). The problem owner says population is highly correlated with delivery volume, so it can be treated as a good heuristic for volume for now. The map shows how strongly the three cities dominate the volume. The problem owner can supply population data if it is needed.
 
