@@ -56,6 +56,31 @@ The number of runs was freed (3 to 5). Runs 1-3 keep their cities; an extra run 
 
 Images: `allocation_4runs_1.png`, `allocation_4runs_2.png`, `allocation_4runs_3.png`, and `allocation_3runs_1.png` for the best three-run allocation at the same overtime weight. Data: `data/more_runs_allocations.csv`, `data/more_runs_summary.json`. Code: `scripts/optimize_more_runs.py`, `scripts/allocation_images_more.py`.
 
+## Adding a compactness preference
+
+**What the "penalty" is.** The search scores each allocation with one number, its total van minutes per day. The compactness penalty adds a small cost for every kilometre of border between two localities that are in different runs. A run made of scattered patches has a lot of border, so it scores worse; one connected area has little. It is a preference, not a rule: a large enough time saving can still justify a patchy run. The van hours reported below do not include the penalty. Border lengths come from the boundary polygons (594 neighbouring pairs, 6,071 km of border in all). Today's allocation has 406 km of border between runs, and Warrnambool is in 2 patches.
+
+Three strengths were tried, in minutes of van time per day per kilometre of border. Same demand and overtime weight as the table above.
+
+| | Runs | Van time | Time over 12 h | Border between runs | Patches per run |
+|---|---|---|---|---|---|
+| Current allocation | 3 | 34.4 h/day | 52 min/day | 406 km | 1 / 1 / 2 |
+| No compactness preference | 3 | 34.4 h | 34 min | 846 km | 4 / 3 / 3 |
+| No compactness preference | 4 | 36.5 h | 18 min | 1,587 km | 7 / 1 / 5, and 9 for the fourth run |
+| Light (0.1) | 3 | 34.4 h | 34 min | 457 km | 1 / 1 / 2 |
+| Light (0.1) | 4, fourth run in the west | 36.6 h | 17 min | 479 km | 1 / 1 / 2 / 1 |
+| Moderate (0.4) | 3 | 34.2 h | 37 min | 346 km | 1 / 1 / 2 |
+| Moderate (0.4) | 4, fourth run in the north | 36.6 h | 18 min | 442 km | 2 / 1 / 2 / 1 |
+| Strong (1.5) | 3 | 34.4 h | 46 min | 364 km | 1 / 1 / 2 |
+| Strong (1.5) | 4 | no fourth run opens | | | |
+
+- **Compactness is cheap.** At the moderate strength the best three-run allocation is more compact than today's (346 km against 406 km) and no worse on time: 34.2 h/day against 34.4 h, and 37 against 52 minutes over 12 hours. Only 20 localities change run, all along the Hamilton-Portland border. This is the allocation to start from: `compact_mu0.4_3runs_1.png`.
+- **The earlier "best" allocations were patchy.** Without the preference the three-run search doubled the border to 846 km, and the four-run one scattered the fourth run over 9 patches.
+- **A fourth run is still a poor trade,** but it now takes a compact sector. At the light strength it is the west of Hamilton's territory (Casterton, Coleraine, Merino, Digby, Strathdownie: 32 towns, 4,800 people). At the moderate strength it is the north around Haven and Balmoral (17 towns, 3,100 people). Either way it works one day in three, adds about 2.2 van-hours a day, and removes only about 20 minutes of overtime.
+- **At the strong setting** the allocation stays close to today's and no extra run is worth opening.
+
+Images: `compact_mu0.4_3runs_1.png`, `compact_mu0.1_4runs_1.png`, `compact_mu0.4_4runs_1.png`. Data: `data/more_runs_allocations_mu0.1.csv`, `_mu0.4.csv` and `_mu1.5.csv`, with matching summaries. Code: `scripts/build_adjacency.py`, and `scripts/optimize_more_runs.py --mu`.
+
 ## How it works
 
 - **Demand.** A locality generates consignments at c x population per day, with c = 0.73 per 1,000 people, chosen so the Warrnambool run averages the 36 consignments of the sample day. Horsham is treated as rarely appearing.
@@ -84,7 +109,8 @@ Images: `allocation_4runs_1.png`, `allocation_4runs_2.png`, `allocation_4runs_3.
 | `data/localities_by_run_from_image.csv` | Localities inside each outline, with population |
 | `data/logs/` | Full output of each optimization run |
 | `allocation_4runs_1.png`, `allocation_4runs_2.png`, `allocation_4runs_3.png`, `allocation_3runs_1.png` | Allocations when the number of runs is free |
-| `scripts/` | The code: `density_map.py`, `classify_localities.py`, `route_times.py`, `optimize_runs.py`, `optimize_more_runs.py`, `allocation_images.py`, `allocation_images_more.py`, `reallocation_map.py`, `allocation_savings.py` |
+| `compact_mu0.4_3runs_1.png`, `compact_mu0.1_4runs_1.png`, `compact_mu0.4_4runs_1.png` | Allocations with the compactness preference |
+| `scripts/` | The code: `build_adjacency.py`,  `density_map.py`, `classify_localities.py`, `route_times.py`, `optimize_runs.py`, `optimize_more_runs.py`, `allocation_images.py`, `allocation_images_more.py`, `reallocation_map.py`, `allocation_savings.py` |
 
 ## What would improve this most
 

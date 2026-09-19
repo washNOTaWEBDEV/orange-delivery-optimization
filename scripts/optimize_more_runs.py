@@ -7,7 +7,7 @@ the Geelong depot each day and has no city. An extra run's day costs nothing whe
 For each number of runs the search seeds the new run around each of the largest towns in turn, re-optimises every town's run
 and rotation day, keeps the best on validation days, and reports it on untouched test days.
 """
-import argparse, csv, itertools, json, math, multiprocessing, random, time
+import argparse, collections, csv, itertools, json, math, multiprocessing, random, time
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 import numpy as np
@@ -27,12 +27,14 @@ ap.add_argument("--days", type=int, default=900)
 ap.add_argument("--val-days", type=int, default=3000)
 ap.add_argument("--anchors", type=int, default=24, help="largest towns tried as the seed of each new run")
 ap.add_argument("--seed-size", type=int, default=10, help="towns nearest the anchor that start in the new run")
+ap.add_argument("--mu", type=float, default=0.0, help="compactness: cost in minutes of van time per day of each km of border between localities in different runs (0 = off)")
 ap.add_argument("--passes", type=int, default=6)
 ap.add_argument("--workers", type=int, default=5, help="parallel processes; each needs about 0.5 GB")
 ap.add_argument("--starts3", type=int, default=6, help="independent searches for the three-run case")
 ap.add_argument("--tag", default="")
 args = ap.parse_args()
 KAPPA = args.kappa
+MU = args.mu
 
 # ---------------- model inputs ----------------
 nodes = list(csv.DictReader(open(DATA / "nodes.csv", encoding="utf-8")))
@@ -123,6 +125,25 @@ lam = [c_dem * pop_eff[i] for i in range(n)]
 q_visit = [0.0 if (i == 0 or is_city[i]) else 1 - math.exp(-L * lam[i]) for i in range(n)]
 m_par = [0.0 if q_visit[i] == 0 else L * lam[i] / q_visit[i] for i in range(n)]
 NB = [[j for j in range(1, n) if j != i and Dl[i][j] <= 60] for i in range(n)]
+ADJ = [[] for _ in range(n)]; EDGES = []                          # localities that touch, with shared border in km
+if (DATA / "adjacency.json").exists():
+    for i_, j_, w_ in json.load(open(DATA / "adjacency.json")):
+        ADJ[i_].append((j_, w_)); ADJ[j_].append((i_, w_)); EDGES.append((i_, j_, w_))
+
+def components(alloc, R):
+    """Per run: (number of separate patches, share of its towns in the largest patch)."""
+    parent = list(range(n))
+    def find(x):
+        while parent[x] != x: parent[x] = parent[parent[x]]; x = parent[x]
+        return x
+    for i, j, w in EDGES:
+        if alloc[i] == alloc[j]: parent[find(i)] = find(j)
+    out = []
+    for r in range(R):
+        mem = [i for i in range(1, n) if alloc[i] == r]
+        if not mem: out.append((0, 1.0)); continue
+        roots = collections.Counter(find(i) for i in mem); out.append((len(roots), max(roots.values()) / len(mem)))
+    return out
 
 class Sim:
     def __init__(self, D, seed):
@@ -149,9 +170,11 @@ class Sim:
                         "active": float((t > 0).mean()), "members": sum(1 for i in range(1, n) if self.alloc[i] == r and not is_city[i]),
                         "people": sum(int(nodes[i]["pop"]) for i in range(1, n) if self.alloc[i] == r)})
         return out
-    def J(self, kappa=None):
-        kappa = KAPPA if kappa is None else kappa
-        return sum(s["mean"] + kappa * s["over"] for s in self.stats())
+    def cut_km(self):
+        return sum(w for i, j, w in EDGES if self.alloc[i] != self.alloc[j])
+    def J(self, kappa=None, mu=None):
+        kappa = KAPPA if kappa is None else kappa; mu = MU if mu is None else mu
+        return sum(s["mean"] + kappa * s["over"] for s in self.stats()) + mu * self.cut_km()
     def p_any_over(self):
         return float((np.max(np.array(self.T), axis=0) > CAP).mean())
     def _change(self, r, d, i, sign):
@@ -166,7 +189,11 @@ class Sim:
         for d in self.vis_days[i][k1]:
             _, _, T2 = self._change(b, d, i, +1); T1 = self.T[b][d]
             tot += (T2 - T1) + KAPPA * (max(T2 - CAP, 0) - max(T1 - CAP, 0))
-        return tot / self.D
+        comp = 0.0
+        if MU and a != b:                                              # compactness: change in border length between runs
+            for j, w in ADJ[i]:
+                rj = self.alloc[j]; comp += w * ((rj != b) - (rj != a))
+        return tot / self.D + MU * comp
     def commit(self, i, a, k0, b, k1):
         for d in self.vis_days[i][k0]:
             S2, pc, T2 = self._change(a, d, i, -1); self.stops[a][d], self.pcs[a][d], self.T[a][d] = S2, pc, T2
@@ -233,7 +260,11 @@ def report(sim, label):
     st = sim.stats(); tot = sum(s["mean"] for s in st)
     print(f"{label}: total {tot/60:.2f} h/day | overtime {sum(s['over'] for s in st):.0f} min/day | any run over 12 h on {sim.p_any_over()*100:.0f}% of days | "
           + " | ".join(f"{run_name(r)} {s['mean']/60:.1f} h ({s['p_over']*100:.0f}%>12h, {s['members']} towns)" for r, s in enumerate(st)), flush=True)
-    return {"total_min": tot, "overtime_min": sum(s["over"] for s in st), "p_any_over": sim.p_any_over(), "J_kappa2": sim.J(2.0), "J_kappa10": sim.J(10.0), "runs": st}
+    comps = components(sim.alloc, sim.R); cut = sim.cut_km()
+    print(f"    compactness: border between runs {cut:,.0f} km | separate patches per run " + "/".join(str(c[0]) for c in comps) +
+          " | share of towns in each run's main patch " + "/".join(f"{c[1]*100:.0f}%" for c in comps), flush=True)
+    return {"total_min": tot, "overtime_min": sum(s["over"] for s in st), "p_any_over": sim.p_any_over(), "J_kappa2": sim.J(2.0, 0),
+            "J_kappa10": sim.J(10.0, 0), "cut_km": cut, "components": comps, "runs": st}
 
 if __name__ == "__main__":
     print(f"calibration: sample-day drive {sample_drive:.0f} min -> {sc:.1f} min per consignment; c = {c_dem*1000:.3f} per 1000 people/day; kappa = {KAPPA}")

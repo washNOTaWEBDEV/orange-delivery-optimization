@@ -3,7 +3,7 @@
 Inputs (local): data/more_runs_allocations.csv, data/more_runs_summary.json, data/nodes.csv, data/region_locality_polygons.json,
 data/georef.txt, data/run_masks.npz.   Outputs: allocation_<k>runs_<rank>.png
 """
-import csv, json, math
+import argparse, csv, json, math
 from pathlib import Path
 import numpy as np
 import matplotlib
@@ -13,6 +13,12 @@ from matplotlib.collections import PolyCollection
 from matplotlib.patches import Patch
 
 BASE = Path(__file__).resolve().parents[1]; DATA = BASE / "data"
+ap = argparse.ArgumentParser()
+ap.add_argument("--tag", default="", help="suffix of the data files, e.g. _mu0.4")
+ap.add_argument("--prefix", default="allocation", help="image file name prefix")
+ap.add_argument("--label", default="", help="text added to each title")
+ap.add_argument("--only", default="", help="comma-separated allocation keys to draw, e.g. 3_1,4_1 (default: all)")
+args = ap.parse_args()
 ax_, bx_, ay_, by_ = map(float, (DATA / "georef.txt").read_text().split())
 merc = lambda lat: math.log(math.tan(math.pi / 4 + math.radians(lat) / 2))
 to_px = lambda lon, lat: (ax_ * lon + bx_, ay_ * merc(lat) + by_)
@@ -23,15 +29,17 @@ CITIES = {"Warrnambool": "Warrnambool", "Portland (Vic.)": "Portland", "Hamilton
 
 nodes = list(csv.DictReader(open(DATA / "nodes.csv", encoding="utf-8")))
 name_of_code = {nd["sal_code"]: nd["name"] for nd in nodes}
-rows = list(csv.DictReader(open(DATA / "more_runs_allocations.csv", encoding="utf-8")))
-summ = json.load(open(DATA / "more_runs_summary.json"))
+rows = list(csv.DictReader(open(DATA / f"more_runs_allocations{args.tag}.csv", encoding="utf-8")))
+summ = json.load(open(DATA / f"more_runs_summary{args.tag}.json"))
 polys = json.loads((DATA / "region_locality_polygons.json").read_text())
 poly_px = {p["code"]: [[to_px(lo, la) for lo, la in ring] for ring in p["rings"]] for p in polys}
 masks = np.load(DATA / "run_masks.npz")
 cols = sorted({c[4:] for c in rows[0] if c.startswith("run_")})         # e.g. "3_1", "4_1", "4_2", "4_3"
 cur = summ["results"]["current"]; cur_total = cur["total_min"]
 
+only = set(filter(None, args.only.split(",")))
 for key in cols:
+    if only and key not in only: continue
     k = int(key.split("_")[0]); rank = int(key.split("_")[1])
     run_of = {r["name"]: r[f"run_{key}"] for r in rows}; cur_of = {r["name"]: r["current_run"] for r in rows}
     members = {}
@@ -71,6 +79,9 @@ for key in cols:
         if s_["members"] or rn in ("Hamilton", "Portland", "Warrnambool"):
             extra = "" if rn in ("Hamilton", "Portland", "Warrnambool") else f", works {s_['active']*100:.0f}% of days"
             lines.append(f"  {rn:<12} {s_['mean']/60:4.1f} h, over 12 h {s_['p_over']*100:2.0f}% of days, {s_['members']} towns{extra}")
+    if "cut_km" in st:
+        lines += ["", f"Border between runs: {st['cut_km']:,.0f} km (current {cur['cut_km']:,.0f} km)",
+                  "Separate patches per run: " + "/".join(str(c[0]) for c in st["components"]) + " (current " + "/".join(str(c[0]) for c in cur["components"]) + ")"]
     lines += ["", f"Time over 12 h: {st['overtime_min']:.0f} min/day (current {cur['overtime_min']:.0f})",
               f"Days when some run is over 12 h: {st['p_any_over']*100:.0f}% (current {cur['p_any_over']*100:.0f}%)",
               f"Localities in a different run from today: {changed}"]
@@ -81,6 +92,6 @@ for key in cols:
                       [Patch(fc="none", ec="black", lw=1.6, label="in a different run from today"), Patch(fc="#efece4", ec="white", label="not in this analysis")],
               loc="upper left", fontsize=9, framealpha=0.95)
     ax.set_xlim(20, 1060); ax.set_ylim(950, 0); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
-    ax.set_title(f"Allocation with {k} runs (option {rank}): town allocation by run\n(dashed lines = current run outlines from the screenshot)", fontsize=11)
-    fig.tight_layout(); out = BASE / f"allocation_{k}runs_{rank}.png"; fig.savefig(out, dpi=110); plt.close(fig)
+    ax.set_title(f"Allocation with {k} runs (option {rank}): town allocation by run{args.label}\n(dashed lines = current run outlines from the screenshot)", fontsize=11)
+    fig.tight_layout(); out = BASE / f"{args.prefix}_{k}runs_{rank}.png"; fig.savefig(out, dpi=110); plt.close(fig)
     print("saved", out.name, "| extra runs:", {rn: len(members[rn]) for rn in extras}, "| localities changed:", changed)
