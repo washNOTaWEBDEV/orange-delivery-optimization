@@ -32,6 +32,9 @@ EXCLUDE_NAMES = {"Cobden", "Camperdown (Vic.)", "Terang", "Noorat"}
 SAMPLE = ["Warrnambool", "Waarre", "Port Campbell", "Nullawarre", "Illowa", "Yarpturk", "Framlingham", "Panmure", "Ecklin South"]
 FIXED = {"Warrnambool": "Warrnambool", "Portland (Vic.)": "Portland", "Hamilton (Vic.)": "Hamilton",   # the three cities
          "Mortlake (Vic.)": "Hamilton", "Simpson (Vic.)": "Warrnambool", "Horsham": "Hamilton"}        # as stated by the problem owner
+RED = set()                                   # localities inside the area the problem owner added (red loop)
+if (DATA / "red_area_localities.csv").exists():
+    RED = {r["sal_code"] for r in csv.DictReader(open(DATA / "red_area_localities.csv", encoding="utf-8"))}
 plain = lambda n: re.sub(r"\s*\((Vic\.?|VIC)\)$", "", n)
 
 pop = {}
@@ -48,17 +51,18 @@ with open(DATA / "vic_locality_coords.csv", newline="", encoding="utf-8") as f:
         inside = [n for n in RUNS if d[n] > 0]
         near = any(abs(v) <= LIMIT_PX for v in d.values())
         is_sample = r["name"] in SAMPLE
-        if not (inside or near or is_sample): continue
-        if px > 1015 or in_poly(px, py, BLACK) or r["name"] in EXCLUDE_NAMES: continue   # ignored smaller runs
+        in_red = r["sal_code"] in RED
+        old_ok = (inside or near or is_sample) and not (px > 1015 or in_poly(px, py, BLACK) or r["name"] in EXCLUDE_NAMES)   # ignored smaller runs
+        if not (old_ok or in_red): continue
         nodes.append({"sal_code": r["sal_code"], "name": r["name"], "plain": plain(r["name"]), "lon": lon, "lat": lat,
                       "pop": int(pop[r["sal_code"]]["total_persons_2021"]), "px": round(px), "py": round(py),
                       "inside": "|".join(inside), "deepest": max(d, key=d.get), "border": int(near or len(inside) > 1),
-                      "fixed_run": FIXED.get(r["name"], "")})
+                      "fixed_run": FIXED.get(r["name"], ""), "new_area": int(in_red and not old_ok)})
 nodes.sort(key=lambda n: (-n["pop"], n["name"]))
 depot = {"sal_code": "DEPOT", "name": "Depot (Geelong)", "plain": "Depot (Geelong)", "lon": 144.36186, "lat": -38.15004,
-         "pop": 0, "px": 0, "py": 0, "inside": "", "deepest": "", "border": 0, "fixed_run": ""}
+         "pop": 0, "px": 0, "py": 0, "inside": "", "deepest": "", "border": 0, "fixed_run": "", "new_area": 0}
 nodes = [depot] + nodes
-print(f"{len(nodes)-1} localities + depot; border/overlap: {sum(n['border'] for n in nodes)}; fixed: {sum(bool(n['fixed_run']) for n in nodes)}")
+print(f"{len(nodes)-1} localities + depot (of which {sum(n_['new_area'] for n_ in nodes)} in the newly added area); border/overlap: {sum(n['border'] for n in nodes)}; fixed: {sum(bool(n['fixed_run']) for n in nodes)}")
 missing = [s for s in SAMPLE if s not in {n['name'] for n in nodes}]
 print("sample suburbs missing from nodes:", missing or "none")
 with open(DATA / "nodes.csv", "w", newline="", encoding="utf-8") as f:

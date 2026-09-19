@@ -99,6 +99,30 @@ The number of runs is fixed at three again, and the moderate compactness prefere
 
 Images: `allocation_3runs_moderate-compactness_option1.png`, `allocation_3runs_moderate-compactness_option2.png`, `allocation_3runs_moderate-compactness_option3.png`. Data: `data/more_runs_allocations_3runs_mu0.4.csv` and its summary. Code: `scripts/allocation_savings_more.py`.
 
+## Adding the red-outlined area (3 and 4 runs, compactness kept)
+
+The problem owner drew a rough red loop east of Warrnambool, covering the Cobden, Camperdown and Terang district and the lake country up to Mortlake, Lismore and Beeac. It was not in the analysis before. 45 more localities (11,959 people) were added: Camperdown 3,354, Terang 2,254, Cobden 1,804, Beeac, Cororooke, Noorat and others. Colac and anything outside the line stay out. Demand per person is unchanged, so the model now expects 81 consignments a day instead of 72. The small Cobden/Camperdown/Terang run is no longer set aside: its towns must go into one of the 3 or 4 runs.
+
+No current run is known for the added area, so the "current" row gives it to the nearest city (Warrnambool). Read that row as a reference point, not as today's reality. Only 3 and 4 runs were searched. Compactness is 0.4 minutes per km of border unless stated, and overtime is weighted 10 times.
+
+| | Van time | Minutes per consignment | Time over 12 h | Days some run is over 12 h | Hamilton / Portland / Warrnambool over 12 h | Border between runs |
+|---|---|---|---|---|---|---|
+| Current runs, area to nearest city | 36.2 h/day | 26.8 | 109 min/day | 94% | 63% / 3% / 82% | 532 km |
+| 3 runs, best | 35.8 h | 26.5 | 66 min | 85% | 46% / 49% / 43% | 486 km |
+| 4 runs, extra run around Lismore | 37.1 h | 27.5 | 41 min | 68% | 42% / 32% / 18% | 554 km |
+| 4 runs, extra run around Port Fairy | 37.9 h | 28.0 | 37 min | 61% | 41% / 12% / 24% | 692 km |
+| 4 runs, extra run around Bushfield | 37.8 h | 27.9 | 37 min | 62% | 45% / 20% / 12% | 698 km |
+| 4 runs, light compactness (0.1), extra run around Cobden | 37.5 h | 27.7 | 32 min | 57% | 31% / 28% / 11% | 640 km |
+| 4 runs, light compactness (0.1), full fourth run from Casterton | 39.8 h | 29.5 | 18 min | 37% | 18% / 11% / 9% | 815 km |
+
+- **Three runs are now full.** With the added area they need 35.8 of a possible 36 van-hours a day, so even the best three-run allocation has some run over 12 hours on 85% of days.
+- **A fourth run is a better trade than before.** It adds 1.3 to 2.1 van-hours a day and removes 25 to 30 minutes of overtime: about 3 to 4 minutes of extra van time per overtime minute removed, against about 8 before the area was added. Per consignment that is 1.0 to 1.5 minutes more (4 to 6%).
+- **The fourth run works one day in three** in the moderate options, for 7 to 11 hours on those days. The Lismore option is the most compact (border 554 km against 486 km for three runs, one patch per run). The Port Fairy and Bushfield options are patchier: their extra run is in 2 or 3 patches.
+- **Only the full fourth run** (light compactness, from Casterton, 73 towns, working two days in three) gets overtime near 18 min/day, at 3.8 more van-hours a day than the best three-run allocation.
+- **Against the reference row,** the three-run options save 10 to 23 min/day of van time and 37 to 43 min/day of overtime. The four-run options use 56 to 103 min/day more van time but save 68 to 72 min/day of overtime.
+
+Images: `allocation_3runs_moderate-compactness_red-area_option1.png` (and option2, option3), `allocation_4runs_moderate-compactness_red-area_option1.png` (and option2, option3), and `allocation_4runs_light-compactness_red-area_option2.png` for the full fourth run. The red dotted line marks the added area. Data: `data/more_runs_allocations_red_mu0.4.csv`, `data/more_runs_allocations_red_mu0.1.csv` and their summaries. Code: `scripts/red_area.py`.
+
 ## How it works
 
 - **Demand.** A locality generates consignments at c x population per day, with c = 0.73 per 1,000 people, chosen so the Warrnambool run averages the 36 consignments of the sample day. Horsham is treated as rarely appearing.
@@ -129,7 +153,8 @@ Images: `allocation_3runs_moderate-compactness_option1.png`, `allocation_3runs_m
 | `allocation_4runs_no-compactness_option1.png`, `allocation_4runs_no-compactness_option2.png`, `allocation_4runs_no-compactness_option3.png`, `allocation_3runs_no-compactness_heavy-overtime-weight.png` | Allocations when the number of runs is free |
 | `allocation_3runs_moderate-compactness_best.png`, `allocation_4runs_light-compactness_west-sector.png`, `allocation_4runs_moderate-compactness_north-sector.png` | Allocations with the compactness preference |
 | `allocation_3runs_moderate-compactness_option1.png`, `allocation_3runs_moderate-compactness_option2.png`, `allocation_3runs_moderate-compactness_option3.png` | Best three allocations with exactly three runs and the compactness preference |
-| `scripts/` | The code: `allocation_savings_more.py`,  `build_adjacency.py`,  `density_map.py`, `classify_localities.py`, `route_times.py`, `optimize_runs.py`, `optimize_more_runs.py`, `allocation_images.py`, `allocation_images_more.py`, `reallocation_map.py`, `allocation_savings.py` |
+| `allocation_*_red-area_option*.png` | Allocations with the red-outlined area added, for 3 and 4 runs (red dotted line = the added area) |
+| `scripts/` | The code: `red_area.py`,  `allocation_savings_more.py`,  `build_adjacency.py`,  `density_map.py`, `classify_localities.py`, `route_times.py`, `optimize_runs.py`, `optimize_more_runs.py`, `allocation_images.py`, `allocation_images_more.py`, `reallocation_map.py`, `allocation_savings.py` |
 
 ## What would improve this most
 

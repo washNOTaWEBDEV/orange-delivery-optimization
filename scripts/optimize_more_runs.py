@@ -108,6 +108,7 @@ def baseline():
     for i in range(1, n):
         nd = nodes[i]
         if nd["fixed_run"]: alloc[i] = BASE_RUNS.index(nd["fixed_run"]); continue
+        if nd.get("new_area") == "1": alloc[i] = min(range(3), key=lambda r: Dl[i][city_idx[r]]); continue   # no current run known: nearest city
         ins = nd["inside"].split("|") if nd["inside"] else []
         if len(ins) == 1: alloc[i] = BASE_RUNS.index(ins[0])
         elif len(ins) > 1: alloc[i] = min((BASE_RUNS.index(r) for r in ins), key=lambda r: Dl[i][city_idx[r]])
@@ -120,7 +121,7 @@ SAMPLE_PARCELS = len(sample_rows)
 sample_stops = [idx[s] for s in sorted({r["Receiver Suburb"].strip() for r in sample_rows})]
 sample_drive = held_karp(sample_stops)
 sc = (SAMPLE_MIN - sample_drive) / SAMPLE_PARCELS
-c_dem = SAMPLE_PARCELS / sum(pop_eff[i] for i in range(1, n) if base_alloc[i] == 2)
+c_dem = SAMPLE_PARCELS / sum(pop_eff[i] for i in range(1, n) if base_alloc[i] == 2 and nodes[i].get("new_area") != "1")   # calibrate on the original towns only
 lam = [c_dem * pop_eff[i] for i in range(n)]
 q_visit = [0.0 if (i == 0 or is_city[i]) else 1 - math.exp(-L * lam[i]) for i in range(n)]
 m_par = [0.0 if q_visit[i] == 0 else L * lam[i] / q_visit[i] for i in range(n)]

@@ -11,12 +11,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection
 from matplotlib.patches import Patch
+from matplotlib.lines import Line2D
 
 BASE = Path(__file__).resolve().parents[1]; DATA = BASE / "data"
 ap = argparse.ArgumentParser()
 ap.add_argument("--tag", default="", help="suffix of the data files, e.g. _mu0.4")
 ap.add_argument("--pref", default="no-compactness", help="compactness setting used in the file name, e.g. moderate-compactness")
 ap.add_argument("--label", default="", help="text added to each title")
+ap.add_argument("--note", default="", help="extra line for the stats box")
 ap.add_argument("--only", default="", help="comma-separated allocation keys to draw, e.g. 3_1,4_1 (default: all)")
 args = ap.parse_args()
 ax_, bx_, ay_, by_ = map(float, (DATA / "georef.txt").read_text().split())
@@ -60,6 +62,9 @@ for key in cols:
     ax.add_collection(PolyCollection(shaped, facecolors=fc, edgecolors=ec, linewidths=lw, alpha=0.8))
     for run, c in EDGE.items():
         ax.contour(masks[run].astype(float), levels=[0.5], colors=[c], linewidths=1.2, linestyles="--", alpha=0.8)
+    red_file = DATA / "red_area_outline_points.json"
+    if red_file.exists():                                                 # the area the problem owner added
+        rp = np.array([to_px(lo, la) for lo, la in json.load(open(red_file))]); ax.plot(rp[:, 0], rp[:, 1], ".", ms=1.8, color="#e60000", alpha=0.9, zorder=9)
     pos = {nd["name"]: (float(nd["px"]), float(nd["py"]), int(nd["pop"])) for nd in nodes[1:]}
     for nm, lab in CITIES.items():
         x, y, _ = pos[nm]; ax.plot(x, y, "*", ms=16, color="black", zorder=6)
@@ -84,11 +89,12 @@ for key in cols:
                   "Separate patches per run: " + "/".join(str(c[0]) for c in st["components"]) + " (current " + "/".join(str(c[0]) for c in cur["components"]) + ")"]
     lines += ["", f"Time over 12 h: {st['overtime_min']:.0f} min/day (current {cur['overtime_min']:.0f})",
               f"Days when some run is over 12 h: {st['p_any_over']*100:.0f}% (current {cur['p_any_over']*100:.0f}%)",
-              f"Localities in a different run from today: {changed}"]
+              f"Localities in a different run from today: {changed}"] + ([args.note] if args.note else [])
     ax.text(0.985, 0.985, "\n".join(lines), transform=ax.transAxes, fontsize=8.2, family="monospace", va="top", ha="right",
             bbox=dict(boxstyle="round,pad=0.5", fc="white", ec="#555", alpha=0.94), zorder=10)
     ax.legend(handles=[Patch(fc=COL[r], ec="none", alpha=0.8, label=f"{r}" + (" run" if not r.startswith("Extra") else " (new)")) for r in
                        ["Hamilton", "Portland", "Warrnambool"] + extras] +
+                      ([Line2D([0], [0], marker=".", ls="", color="#e60000", label="added area (red loop)")] if red_file.exists() else []) +
                       [Patch(fc="none", ec="black", lw=1.6, label="in a different run from today"), Patch(fc="#efece4", ec="white", label="not in this analysis")],
               loc="upper left", fontsize=9, framealpha=0.95)
     ax.set_xlim(20, 1060); ax.set_ylim(950, 0); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
