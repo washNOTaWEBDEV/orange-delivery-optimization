@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Images for the allocations found when the number of runs is free: one image per allocation with at least one extra run.
 Inputs (local): data/more_runs_allocations.csv, data/more_runs_summary.json, data/nodes.csv, data/region_locality_polygons.json,
-data/georef.txt, data/run_masks.npz.   Outputs: allocation_<k>runs_<rank>.png
+data/georef.txt, data/run_masks.npz.   Outputs: allocation_<k>runs_<pref>_option<rank>.png
 """
 import argparse, csv, json, math
 from pathlib import Path
@@ -15,7 +15,7 @@ from matplotlib.patches import Patch
 BASE = Path(__file__).resolve().parents[1]; DATA = BASE / "data"
 ap = argparse.ArgumentParser()
 ap.add_argument("--tag", default="", help="suffix of the data files, e.g. _mu0.4")
-ap.add_argument("--prefix", default="allocation", help="image file name prefix")
+ap.add_argument("--pref", default="no-compactness", help="compactness setting used in the file name, e.g. moderate-compactness")
 ap.add_argument("--label", default="", help="text added to each title")
 ap.add_argument("--only", default="", help="comma-separated allocation keys to draw, e.g. 3_1,4_1 (default: all)")
 args = ap.parse_args()
@@ -93,5 +93,5 @@ for key in cols:
               loc="upper left", fontsize=9, framealpha=0.95)
     ax.set_xlim(20, 1060); ax.set_ylim(950, 0); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
     ax.set_title(f"Allocation with {k} runs (option {rank}): town allocation by run{args.label}\n(dashed lines = current run outlines from the screenshot)", fontsize=11)
-    fig.tight_layout(); out = BASE / f"{args.prefix}_{k}runs_{rank}.png"; fig.savefig(out, dpi=110); plt.close(fig)
+    fig.tight_layout(); out = BASE / f"allocation_{k}runs_{args.pref}_option{rank}.png"; fig.savefig(out, dpi=110); plt.close(fig)
     print("saved", out.name, "| extra runs:", {rn: len(members[rn]) for rn in extras}, "| localities changed:", changed)

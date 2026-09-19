@@ -4,7 +4,7 @@ Written for: the two people working on the problem. Not committed to the reposit
 
 ## Result in one paragraph
 
-Under the stated rules (three runs, one driver per run, 12-hour limit, 2-day wait for every town except the three cities) and with demand calibrated on the one sample day, the model says the current Hamilton run is over 12 hours on about 56% of days. Moving Hamilton's south-west border towns to the Portland run brings that down to 27-34% of days for about 23-25 minutes less total driving per day (roughly 100 hours a year). Portland's run gets longer in exchange. The three best allocations found are in `allocation_1.png`, `allocation_2.png` and `allocation_3.png`. Treat the differences between them as within model noise: the calibration rests on one sample day.
+Under the stated rules (three runs, one driver per run, 12-hour limit, 2-day wait for every town except the three cities) and with demand calibrated on the one sample day, the model says the current Hamilton run is over 12 hours on about 56% of days. Moving Hamilton's south-west border towns to the Portland run brings that down to 27-34% of days for about 23-25 minutes less total driving per day (roughly 100 hours a year). Portland's run gets longer in exchange. The three best allocations found are in `allocation_3runs_no-compactness_option1.png`, `allocation_3runs_no-compactness_option2.png` and `allocation_3runs_no-compactness_option3.png`. Treat the differences between them as within model noise: the calibration rests on one sample day.
 
 ## The three best allocations (untouched test days)
 
@@ -54,7 +54,7 @@ The number of runs was freed (3 to 5). Runs 1-3 keep their cities; an extra run 
 - **Its territory is patchy.** The model does not penalise a run whose towns are not one connected area, so the fourth run in the images is fragmented. That may be impractical for warehouse sorting; a compactness rule could be added.
 - **Overtime never disappears.** Even with four runs some run is over 12 hours on about 40% of days, because daily volumes vary. Removing that would need spare capacity on heavy days, such as a second driver only when a run is full. That is the splitting you asked me to ignore for now, and it would likely cost far less than a permanent fourth run.
 
-Images: `allocation_4runs_1.png`, `allocation_4runs_2.png`, `allocation_4runs_3.png`, and `allocation_3runs_1.png` for the best three-run allocation at the same overtime weight. Data: `data/more_runs_allocations.csv`, `data/more_runs_summary.json`. Code: `scripts/optimize_more_runs.py`, `scripts/allocation_images_more.py`.
+Images: `allocation_4runs_no-compactness_option1.png`, `allocation_4runs_no-compactness_option2.png`, `allocation_4runs_no-compactness_option3.png`, and `allocation_3runs_no-compactness_heavy-overtime-weight.png` for the best three-run allocation at the same overtime weight. Data: `data/more_runs_allocations.csv`, `data/more_runs_summary.json`. Code: `scripts/optimize_more_runs.py`, `scripts/allocation_images_more.py`.
 
 ## Adding a compactness preference
 
@@ -74,12 +74,12 @@ Three strengths were tried, in minutes of van time per day per kilometre of bord
 | Strong (1.5) | 3 | 34.4 h | 46 min | 364 km | 1 / 1 / 2 |
 | Strong (1.5) | 4 | no fourth run opens | | | |
 
-- **Compactness is cheap.** At the moderate strength the best three-run allocation is more compact than today's (346 km against 406 km) and no worse on time: 34.2 h/day against 34.4 h, and 37 against 52 minutes over 12 hours. Only 20 localities change run, all along the Hamilton-Portland border. This is the allocation to start from: `compact_mu0.4_3runs_1.png`.
+- **Compactness is cheap.** At the moderate strength the best three-run allocation is more compact than today's (346 km against 406 km) and no worse on time: 34.2 h/day against 34.4 h, and 37 against 52 minutes over 12 hours. Only 20 localities change run, all along the Hamilton-Portland border. This is the allocation to start from: `allocation_3runs_moderate-compactness_best.png`.
 - **The earlier "best" allocations were patchy.** Without the preference the three-run search doubled the border to 846 km, and the four-run one scattered the fourth run over 9 patches.
 - **A fourth run is still a poor trade,** but it now takes a compact sector. At the light strength it is the west of Hamilton's territory (Casterton, Coleraine, Merino, Digby, Strathdownie: 32 towns, 4,800 people). At the moderate strength it is the north around Haven and Balmoral (17 towns, 3,100 people). Either way it works one day in three, adds about 2.2 van-hours a day, and removes only about 20 minutes of overtime.
 - **At the strong setting** the allocation stays close to today's and no extra run is worth opening.
 
-Images: `compact_mu0.4_3runs_1.png`, `compact_mu0.1_4runs_1.png`, `compact_mu0.4_4runs_1.png`. Data: `data/more_runs_allocations_mu0.1.csv`, `_mu0.4.csv` and `_mu1.5.csv`, with matching summaries. Code: `scripts/build_adjacency.py`, and `scripts/optimize_more_runs.py --mu`.
+Images: `allocation_3runs_moderate-compactness_best.png`, `allocation_4runs_light-compactness_west-sector.png`, `allocation_4runs_moderate-compactness_north-sector.png`. Data: `data/more_runs_allocations_mu0.1.csv`, `_mu0.4.csv` and `_mu1.5.csv`, with matching summaries. Code: `scripts/build_adjacency.py`, and `scripts/optimize_more_runs.py --mu`.
 
 ## Three runs again, with the compactness preference
 
@@ -97,7 +97,7 @@ The number of runs is fixed at three again, and the moderate compactness prefere
 - **Compact 1 is the gentlest change** (21 localities, 3,100 people) and the best on van time. Compact 2 trades a longer Portland day for a much shorter Hamilton one.
 - **Why the saving is smaller than in the first table.** These searches weight overtime 10 times rather than 2, so they give up some van time to remove overtime, and they are compact. The compactness preference itself did not cost anything measurable: without it the three-run search found 34.4 h/day, with it 34.2 h/day.
 
-Images: `compact3_3runs_1.png`, `compact3_3runs_2.png`, `compact3_3runs_3.png`. Data: `data/more_runs_allocations_3runs_mu0.4.csv` and its summary. Code: `scripts/allocation_savings_more.py`.
+Images: `allocation_3runs_moderate-compactness_option1.png`, `allocation_3runs_moderate-compactness_option2.png`, `allocation_3runs_moderate-compactness_option3.png`. Data: `data/more_runs_allocations_3runs_mu0.4.csv` and its summary. Code: `scripts/allocation_savings_more.py`.
 
 ## How it works
 
@@ -118,7 +118,7 @@ Images: `compact3_3runs_1.png`, `compact3_3runs_2.png`, `compact3_3runs_3.png`. 
 
 | File | What it is |
 |---|---|
-| `allocation_1.png`, `allocation_2.png`, `allocation_3.png` | The three best allocations, one image each |
+| `allocation_3runs_no-compactness_option1.png`, `allocation_3runs_no-compactness_option2.png`, `allocation_3runs_no-compactness_option3.png` | The three best allocations, one image each |
 | `population_density_map.png` | Population density by locality with the current outlines |
 | `proposed_reallocation_map.png` | Robust moves (solid) and assumption-dependent moves (hollow) |
 | `data/top3_allocations.csv` | Every locality's run in each allocation, with its rotation day |
@@ -126,9 +126,9 @@ Images: `compact3_3runs_1.png`, `compact3_3runs_2.png`, `compact3_3runs_3.png`. 
 | `data/borderline_localities_from_image.csv` | Localities within about 3 km of an outline |
 | `data/localities_by_run_from_image.csv` | Localities inside each outline, with population |
 | `data/logs/` | Full output of each optimization run |
-| `allocation_4runs_1.png`, `allocation_4runs_2.png`, `allocation_4runs_3.png`, `allocation_3runs_1.png` | Allocations when the number of runs is free |
-| `compact_mu0.4_3runs_1.png`, `compact_mu0.1_4runs_1.png`, `compact_mu0.4_4runs_1.png` | Allocations with the compactness preference |
-| `compact3_3runs_1.png`, `compact3_3runs_2.png`, `compact3_3runs_3.png` | Best three allocations with exactly three runs and the compactness preference |
+| `allocation_4runs_no-compactness_option1.png`, `allocation_4runs_no-compactness_option2.png`, `allocation_4runs_no-compactness_option3.png`, `allocation_3runs_no-compactness_heavy-overtime-weight.png` | Allocations when the number of runs is free |
+| `allocation_3runs_moderate-compactness_best.png`, `allocation_4runs_light-compactness_west-sector.png`, `allocation_4runs_moderate-compactness_north-sector.png` | Allocations with the compactness preference |
+| `allocation_3runs_moderate-compactness_option1.png`, `allocation_3runs_moderate-compactness_option2.png`, `allocation_3runs_moderate-compactness_option3.png` | Best three allocations with exactly three runs and the compactness preference |
 | `scripts/` | The code: `allocation_savings_more.py`,  `build_adjacency.py`,  `density_map.py`, `classify_localities.py`, `route_times.py`, `optimize_runs.py`, `optimize_more_runs.py`, `allocation_images.py`, `allocation_images_more.py`, `reallocation_map.py`, `allocation_savings.py` |
 
 ## What would improve this most

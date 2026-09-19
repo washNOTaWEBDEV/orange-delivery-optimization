@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """One image per top allocation: localities shaded by the run they are allocated to, moved localities outlined and labelled.
 Inputs (local): data/top3_allocations.csv, data/top3_summary.json, data/nodes.csv, data/region_locality_polygons.json,
-data/georef.txt, data/run_masks.npz.   Outputs: allocation_1.png, allocation_2.png, allocation_3.png
+data/georef.txt, data/run_masks.npz.   Outputs: allocation_3runs_no-compactness_option1.png (and 2, 3)
 """
 import csv, json, math
 from pathlib import Path
@@ -84,5 +84,5 @@ for k in (1, 2, 3):
               loc="upper left", fontsize=9, framealpha=0.95)
     ax.set_xlim(20, 1060); ax.set_ylim(950, 0); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
     ax.set_title(f"{info['label']} of the best three: town allocation by run\n(dashed lines = current run outlines from the screenshot)", fontsize=11)
-    fig.tight_layout(); out = BASE / f"allocation_{k}.png"; fig.savefig(out, dpi=110); plt.close(fig)
+    fig.tight_layout(); out = BASE / f"allocation_3runs_no-compactness_option{k}.png"; fig.savefig(out, dpi=110); plt.close(fig)
     print("saved", out.name, "|", len(changed), "localities changed,", f"{moved_people:,}", "people")
