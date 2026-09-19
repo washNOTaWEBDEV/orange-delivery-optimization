@@ -86,7 +86,7 @@ The current territories are drawn in Google My Maps as semi-transparent polygons
 - Population data, for example the Victoria population map based on the 2021 Census (https://mangomap.com/franchise-demo/maps/88276/Victoria-Population-Map). The problem owner says population is highly correlated with delivery volume, so it can be treated as a good heuristic for volume for now. The map shows how strongly the three cities dominate the volume. The problem owner can supply population data if it is needed.
 
 **Thin or missing**
-- Durations of runs: "very little data on the length of time of runs". The problem owner will provide some real durations. So far there is one: the sample run above took 11 hours 43 minutes in total.
+- Durations of runs: "very little data on the length of time of runs". The problem owner will provide some real durations. So far there is one: the sample run above took 11 hours 43 minutes in total, including breaks, which the 12-hour limit excludes.
 
 **Sensitivity**
 - The problem owner first believed per-town consignment counts over time were not accessible, and that the boss would not like them being accessed. Access was later found to exist. Whether the company is comfortable with the data being used outside the workplace is not settled, so treat raw run sheets as confidential and keep them out of version control.
@@ -96,3 +96,4 @@ The current territories are drawn in Google My Maps as semi-transparent polygons
 - **Waits.** How irregular arrivals should be modelled (for example, average rates from history) is not stated.
 - **Scope.** The full list of towns in the three runs is not given (it can be derived from the run sheets).
 - **Run sheet coverage.** The sample export has no date, run name, driver or timing fields, so each sheet's run and date, and how long that day took, have to be supplied separately.
+- **Sample run timing.** The length of the breaks inside the sample run's 11 hours 43 minutes is not stated, so its length under the 12-hour measure (which excludes breaks) is not known.
